@@ -40,4 +40,18 @@ app.get("/api/ping", (req, res) => {
     res.json({message: "Nexus is alive!"})
 });
 
+import userRouter from "./routes/user.routes.js"
+
+app.use("/api/users", userRouter);
+
+
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    const message    = err.message    || "Internal server error";
+    return res.status(statusCode).json({
+        success: false,
+        statusCode,
+        message
+    });
+});
 export default app;

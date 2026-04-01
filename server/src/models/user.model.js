@@ -22,7 +22,12 @@ const UserModel = {
         )
         return rows[0] || null;
     },
-
+    async findByIdWithPassword(id) {
+        const [rows] = await pool.query(
+            'SELECT * FROM Users WHERE id = ?', [id]
+        )
+        return rows[0] || null;
+    },
     async create( { name, username, email, password } ) {
         const hasedPassword = await bcrypt.hash(password, 12);
         const [result] = await pool.query(
@@ -31,11 +36,18 @@ const UserModel = {
         )
         return result.insertId;
     },
-    async update( { name, username, email, password, id } ) {
+    async updateUserDetails( { name, username, email, id } ) {
+        const [result] = await pool.query(
+            'UPDATE Users SET name = ?, username = ?, email = ? WHERE id = ?',
+            [name, username, email, id]
+        )
+        return result.affectedRows;
+    },
+    async updatePassword( { password, id } ){
         const hasedPassword = await bcrypt.hash(password, 12);
         const [result] = await pool.query(
-            'UPDATE Users SET name = ?, username = ?, email = ?, password = ? WHERE id = ?',
-            [name, username, email, password, id]
+            'UPDATE Users SET password = ? WHERE id = ?',
+            [hasedPassword, id]
         )
         return result.affectedRows;
     },
@@ -63,7 +75,7 @@ const UserModel = {
         )
     },
     generateRefreshToken(user){
-        return (
+        return jwt.sign(
             { id: user.id },
             REFRESH_TOKEN_SECRET,
             {
