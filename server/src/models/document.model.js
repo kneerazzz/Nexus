@@ -1,31 +1,52 @@
 import { pool } from "../config/db.js"
 
 const DocumentModel = {
-    async findAll(user_id){
+    async findAll(user_id) {
         const [rows] = await pool.query(
             `SELECT d.*,
-                GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS tags
-                FROM Documents d
-                LEFT JOIN DocumentTags dt ON d.id = dt.document_id
-                LEFT JOIN Tags t ON dt.tag_id = t.id
-                WHERE d.userId = ?
-                GROUP BY d.id
-                ORDER BY created_at DESC`,
-                [user_id]
+                GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS tags,
+                COALESCE(latest.file_url, d.file_url) AS current_file_url,
+                COALESCE(latest.version_num, 0) AS current_version
+            FROM Documents d
+            LEFT JOIN DocumentTags dt ON d.id = dt.document_id
+            LEFT JOIN Tags t ON dt.tag_id = t.id
+            LEFT JOIN (
+                SELECT document_id, file_url, version_num
+                FROM DocumentVersions
+                WHERE (document_id, version_num) IN (
+                    SELECT document_id, MAX(version_num)
+                    FROM DocumentVersions
+                    GROUP BY document_id
+                )
+            ) latest ON d.id = latest.document_id
+            WHERE d.user_id = ?
+            GROUP BY d.id
+            ORDER BY d.created_at DESC`,
+            [user_id]
         );
         return rows;
     },
-
-    async findById(id, user_id){
+    async findById(id, user_id) {
         const [rows] = await pool.query(
             `SELECT d.*,
-                GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS tags
-                FROM Documents d
-                LEFT JOIN DocumentTags dt ON d.id = dt.document_id
-                LEFT JOIN Tags t ON dt.tag_id = t.id
-                WHERE d.id = ? AND d.user_id = ?
-                GROUP BY d.id`,
-                [id, user_id]
+                GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS tags,
+                COALESCE(latest.file_url, d.file_url) AS current_file_url,
+                COALESCE(latest.version_num, 0) AS current_version
+            FROM Documents d
+            LEFT JOIN DocumentTags dt ON d.id = dt.document_id
+            LEFT JOIN Tags t ON dt.tag_id = t.id
+            LEFT JOIN (
+                SELECT document_id, file_url, version_num
+                FROM DocumentVersions
+                WHERE (document_id, version_num) IN (
+                    SELECT document_id, MAX(version_num)
+                    FROM DocumentVersions
+                    GROUP BY document_id
+                )
+            ) latest ON d.id = latest.document_id
+            WHERE d.id = ? AND d.user_id = ?
+            GROUP BY d.id`,
+            [id, user_id]
         );
         return rows[0] || null;
     },
