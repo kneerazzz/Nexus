@@ -1,4 +1,4 @@
-import { pool } from "../config/db";
+import { pool } from "../config/db.js";
 
 const ImageModel = {
     async findAll(user_id) {
@@ -9,6 +9,7 @@ const ImageModel = {
             LEFT JOIN ImageTags it ON i.id = it.image_id
             LEFT JOIN Tags t ON it.tag_id = t.id
             WHERE i.user_id = ?
+            GROUP BY i.id
             GROUP BY i.created_at DESC`,
             [user_id]
         );
@@ -18,7 +19,7 @@ const ImageModel = {
     async findById(id, user_id){
         const [rows] = await pool.query(
             `SELECT i.*,
-                GROUP_CONCATE(t.name ORDER BY t.name SEPARATOR ', ') AS tags
+                GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') AS tags
             FROM Images i
             LEFT JOIN ImageTags it ON i.id = it.image_id
             LEFT JOIN Tags t ON it.tag_id = t.id
@@ -31,7 +32,7 @@ const ImageModel = {
 
     async create({user_id, title, file_url, public_id, width, height, file_size}){
         const [result] = await pool.query(
-            `INSERT into Images (user_id, title, file_url, public_id, width, height, file_size)`
+            `INSERT INTO Images (user_id, title, file_url, public_id, width, height, file_size) VALUES (?, ?, ?, ?, ?, ?, ?)`
             [user_id, title, file_url, public_id, width, height, file_size]
         );
         return result.insertId;
