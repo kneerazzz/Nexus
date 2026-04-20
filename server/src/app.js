@@ -42,9 +42,12 @@ app.get("/api/ping", (req, res) => {
 
 import userRouter from "./routes/user.routes.js"
 import documentRouter from "./routes/document.routes.js"
+import imageRouter from "./routes/image.route.js"
+
 
 app.use("/api/users", userRouter);
 app.use("/api/documents", documentRouter)
+app.use("/api/images", imageRouter)
 
 
 app.use((err, req, res, next) => {
