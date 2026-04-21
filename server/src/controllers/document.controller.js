@@ -1,4 +1,5 @@
 import DocumentModel from "../models/document.model.js";
+import ActivityService from "../services/activity.service.js";
 import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -78,6 +79,14 @@ const uploadDocument = asyncHandler(async(req, res) => {
     if(!document){
         throw new ApiError(500, "Internal server error");
     }
+    ActivityService.log({
+        user_id: user.id,
+        action: 'UPLOAD_DOCUMENT',
+        entity_type: 'document',
+        entity_id: docId,
+        metadata: { title, file_type: req.file.mimetype}
+    })
+
     return res
     .status(200)
     .json(
@@ -112,6 +121,14 @@ const updateDocument = asyncHandler(async(req, res) => {
     if(!updated){
         throw new ApiError(500, "Internal server error");
     }
+
+    ActivityService.log({
+        user_id: user.id,
+        action: 'UPDATE_DOCUMENT',
+        entity_type: 'document',
+        entity_id: id
+    })
+    
     return res
     .status(200)
     .json(
@@ -136,6 +153,14 @@ const deleteDocument = asyncHandler(async(req, res) => {
     }
     await deleteFromCloudinary(document.public_id, 'raw');
     await DocumentModel.delete({id, user_id: user.id});
+
+    ActivityService.log({
+        user_id: user.id,
+        action: 'DELETE_DOCUMENT',
+        entity_type: 'document',
+        entity_id: id
+    })
+    
 
     return res
     .status(200)

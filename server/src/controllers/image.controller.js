@@ -3,7 +3,7 @@ import { ApiError } from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { deleteFromCloudinary, uploadToCloudinary } from "../utils/cloudinary.util.js"
-
+import ActivityService from "../services/activity.service.js"
 
 const getAllImages = asyncHandler(async(req, res) => {
     const user = req.user;
@@ -69,6 +69,15 @@ const uploadImage = asyncHandler(async(req, res) => {
     if(!image){
         throw new ApiError(500, "Internal server error");
     }
+
+    ActivityService.log({
+        user_id: user.id,
+        action: 'UPLOAD_IMAGE',
+        entity_type: 'image',
+        entity_id: imageId,
+        metadata: { title, file_type: file.mimetype}
+    })
+    
     return res
     .status(200)
     .json(
@@ -101,6 +110,14 @@ const updateImage = asyncHandler(async(req, res) => {
     if(!updatedImage){
         throw new ApiError(500, "Internal server error");
     }
+
+    ActivityService.log({
+        user_id: user.id,
+        action: 'UPDATE_IMAGE',
+        entity_type: 'image',
+        entity_id: id
+    })
+    
     return res
     .status(200)
     .json(
@@ -126,6 +143,13 @@ const deleteImage = asyncHandler(async(req, res) => {
         id: id,
         user_id: user.id
     })
+    ActivityService.log({
+        user_id: user.id,
+        action: 'DELETE_IMAGE',
+        entity_type: 'image',
+        entity_id: id
+    })
+    
     return res
     .status(200)
     .json(

@@ -44,12 +44,15 @@ import userRouter from "./routes/user.routes.js"
 import documentRouter from "./routes/document.routes.js"
 import imageRouter from "./routes/image.routes.js"
 import tagRouter from "./routes/tag.routes.js"
-
+import relationRouter from "./routes/relation.routes.js"
+import activityRouter from "./routes/activity.routes.js"
 
 app.use("/api/users", userRouter);
 app.use("/api/documents", documentRouter)
 app.use("/api/images", imageRouter)
 app.use("/api/tags", tagRouter)
+app.use("/api/relations", relationRouter)
+app.use("/api/activity", activityRouter)
 
 
 app.use((err, req, res, next) => {
