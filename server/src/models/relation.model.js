@@ -21,7 +21,7 @@ const RelationModel = {
     async create({source_type, source_id, target_type, target_id, relation_label}){
         const [result] = await pool.query(
             `INSERT INTO Relations (source_type, source_id, target_type, target_id, relation_label)
-            VALUES = (?, ?, ?, ?, ?)`,
+            VALUES (?, ?, ?, ?, ?)`,
             [source_type, source_id, target_type, target_id, relation_label || null]
         );
         return result.insertId;
@@ -39,8 +39,8 @@ const RelationModel = {
     async findAllForEntity({ type, id }){
         const [rows] = await pool.query(
             `SELECT * FROM Relations
-            WHERE source_type = ? AND source_id = ?
-            OR target_type = ? AND target_id = ?
+            WHERE (source_type = ? AND source_id = ?)
+            OR (target_type = ? AND target_id = ?)
             ORDER BY created_at DESC`,
             [type, id, type, id]
         );

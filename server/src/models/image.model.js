@@ -10,7 +10,7 @@ const ImageModel = {
             LEFT JOIN Tags t ON it.tag_id = t.id
             WHERE i.user_id = ?
             GROUP BY i.id
-            GROUP BY i.created_at DESC`,
+            ORDER BY i.created_at DESC`,
             [user_id]
         );
         return rows;
@@ -32,7 +32,7 @@ const ImageModel = {
 
     async create({user_id, title, file_url, public_id, width, height, file_size}){
         const [result] = await pool.query(
-            `INSERT INTO Images (user_id, title, file_url, public_id, width, height, file_size) VALUES (?, ?, ?, ?, ?, ?, ?)`
+            `INSERT INTO Images (user_id, title, file_url, public_id, width, height, file_size) VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [user_id, title, file_url, public_id, width, height, file_size]
         );
         return result.insertId;
